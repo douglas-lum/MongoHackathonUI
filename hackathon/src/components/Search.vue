@@ -12,6 +12,10 @@
                   <h1 class="title">Search for a report using keywords or DOCID</h1>
                   <h2 class="subheading mb-5">Enter one or more of the following</h2>
                   <v-text-field label="Keywords" v-model="searchTerms" hint="E.g. economics or politics" persistent-hint></v-text-field>
+                  <v-progress-linear
+                  v-bind:indeterminate= true
+                  v-bind:active = loadactiveState
+                  ></v-progress-linear>
                   <v-layout row wrap align-right>
                       <v-flex class="text-lg-right">
                           <v-btn color="teal darken-1" dark @click="performSearch(searchTerms)">Search
@@ -95,7 +99,6 @@
 <script>
 /* eslint-disable */
 import axios from 'axios'
-
 var results
 
 export default {
@@ -120,18 +123,21 @@ export default {
           value: 'title'}
       ],
       items: [],
-      selected: []
+      selected: [],
+      loadactiveState: false
     }
   },
   methods: {
     performSearch: function (value) {
       const vm = this
+      vm.loadactiveState = true
       vm.items= []
       axios({
         method: 'post',
-        //url: 'http://35.227.62.44:8080/searchReport?searchTerm=' + value
-        url: 'http://192.168.2.224:8080/searchReport?searchTerm=' + value
+        url: 'http://35.227.62.44:8080/searchReport?searchTerm=' + value
+        // url: 'http://192.168.2.224:8080/searchReport?searchTerm=' + value
       }).then(function (response) {
+        vm.loadactiveState = false
         results = response.data
         console.log(results)
         if (results.length > 0) {
@@ -156,6 +162,7 @@ export default {
       this.pagination.sortBy = 'docid'
       this.pagination.descending = true
       this.isSearchWithNoResults = false
+      loadactiveState: false
     },
     toggleAll () {
       if (this.selected.length === this.items.length) {

@@ -112,13 +112,13 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
    function getSourceList(){
-     return axios.get('http://192.168.2.224:8080/getSourceList', "");
-      //return axios.get('http://35.227.62.44:8080/getSourceList', "");
+    //  return axios.get('http://192.168.2.224:8080/getSourceList', "");
+      return axios.get('http://35.227.62.44:8080/getSourceList', "");
     }
 
     function openReport(){
-      return axios.post("http://192.168.2.224:8080/openReport?docid=" + to.params.docid, "");
-      //return axios.post("http://35.227.62.44:8080/openReport?docid=" + to.params.docid, "");
+      // return axios.post("http://192.168.2.224:8080/openReport?docid=" + to.params.docid, "");
+      return axios.post("http://35.227.62.44:8080/openReport?docid=" + to.params.docid, "");
     }
 
     axios.all([getSourceList(), openReport()]).then(axios.spread(function(sourceList, report){
@@ -150,8 +150,8 @@ export default {
       console.log();
       axios
         .create({
-          baseURL: "http://192.168.2.224:8080",  
-          //baseURL: "http://35.227.62.44:8080",
+          // baseURL: "http://192.168.2.224:8080",  
+          baseURL: "http://35.227.62.44:8080",
           headers: {
             Authorization: "Bearer {token}"
           }

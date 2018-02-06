@@ -99,8 +99,8 @@ export default {
       console.log();
       axios
         .create({
-          baseURL: "http://192.168.2.224:8080",
-          //baseURL: "http://35.227.62.44:8080",
+          // baseURL: "http://192.168.2.224:8080",
+          baseURL: "http://35.227.62.44:8080",
           headers: {
             Authorization: "Bearer {token}"
           }
@@ -123,14 +123,14 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     axios.create({
-      baseURL: "http://192.168.2.224:8080",
-      //baseURL: "http://35.227.62.44:8080",
+      // baseURL: "http://192.168.2.224:8080",
+      baseURL: "http://35.227.62.44:8080",
       headers: {
         Authorization: "Bearer {token}"
       }
     });
-    axios.get("http://192.168.2.224:8080/getSourceList", "").then(res => {
-   // axios.get("http://35.227.62.44:8080/getSourceList", "").then(res => {
+    // axios.get("http://192.168.2.224:8080/getSourceList", "").then(res => {
+   axios.get("http://35.227.62.44:8080/getSourceList", "").then(res => {
       next(vm => {
         vm.sourceOptions = res.data.slice(1, -1).split(", ");
       });
