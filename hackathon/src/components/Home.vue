@@ -9,10 +9,7 @@
 <img src="../assets/Setup.jpg">
 <p>&nbsp;</p>
 <h3 style="text-align: center;"><strong>Our Data</strong></h3>
-????
-<p>&nbsp;</p>
-<h3 style="text-align: center;"><strong>Our Findings</strong></h3>
-????
+874,243 overt reports, across 200+ sources
 <p>&nbsp;</p>
 <h3 style="text-align: center;"><strong>Our People</strong></h3><strong><br /></strong>Ong Cher Yee, Chen Yanchang, Chelle Lau, Douglas Lum, Mark Lee, Tristan Loo
 </v-layout>

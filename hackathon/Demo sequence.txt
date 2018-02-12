@@ -1,0 +1,8 @@
+1. Run through UI (Frontend laptop)
+    a. Normal CRUD/Search
+2. Test case 1- down secondary (Both laptops)
+    a. Search
+3. Test case 2- down primary (Both laptops)
+    a. Search
+    b. Insert new report (test syncing of new primary to new secondary)
+4. Operationalising (Overts Space)

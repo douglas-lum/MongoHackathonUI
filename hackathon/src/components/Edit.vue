@@ -74,6 +74,7 @@
                 label="Report Content"
                 textarea
                 v-model="content"
+                auto-grow
               ></v-text-field>
             </v-flex>
           </v-layout>
@@ -97,12 +98,16 @@
 <script>
 /* eslint-disable */
 import axios from "axios";
+var x
 export default {
   data() {
     return {
+        tmpTitle: "",
+        tmpContent: "",
+        tmpSourceSelect: "",  
       docid: "",
-      title:"",
-      date:"",
+      title: "",
+      date: "",
       content: "",
       sourceSelect: "",
       sourceOptions: [],
@@ -112,27 +117,26 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
    function getSourceList(){
-    //  return axios.get('http://192.168.2.224:8080/getSourceList', "");
+    //  return axios.get('http://192.168.2.227:8080/getSourceList', "");
       return axios.get('http://35.227.62.44:8080/getSourceList', "");
     }
-
     function openReport(){
-      // return axios.post("http://192.168.2.224:8080/openReport?docid=" + to.params.docid, "");
+      // return axios.post("http://192.168.2.227:8080/openReport?docid=" + to.params.docid, "");
       return axios.post("http://35.227.62.44:8080/openReport?docid=" + to.params.docid, "");
     }
-
     axios.all([getSourceList(), openReport()]).then(axios.spread(function(sourceList, report){
       next (vm => {
         var sourceListData = sourceList.data;
         var reportData = report.data;
-
         vm.sourceOptions = sourceListData.slice(1,-1).split(', ');
         vm.docid = reportData.docid;
         vm.date = Date(reportData.date);
         vm.title = reportData.title;
         vm.content = reportData.content;
         vm.sourceSelect = reportData.source;
-        console.log(vm.sourceSelect);
+        vm.tmpTitle = reportData.title;
+        vm.tmpContent = reportData.content;
+        vm.tmpSourceSelect = reportData.source;
       });
     }));
   },
@@ -146,11 +150,13 @@ export default {
       data.append("source", this.sourceSelect);
       data.append("date", (new Date).getTime());
       console.log(this.sourceSelect);
+      // Checking all mandatory fields are not empty before creating
+      if (this.title.length > 0 & this.content.length > 0) {
       console.log("Submitting to MongoDB");
       console.log();
       axios
         .create({
-          // baseURL: "http://192.168.2.224:8080",  
+          // baseURL: "http://192.168.2.227:8080",  
           baseURL: "http://35.227.62.44:8080",
           headers: {
             Authorization: "Bearer {token}"
@@ -164,6 +170,17 @@ export default {
           vm.isUpdateUnsuccessful = true
         }
         });
+        this.tmpSourceSelect = this.sourceSelect
+        this.tmpTitle = this.title
+        this.tmpContent = this.content
+      } else { // Stop creating if any mandatory field is not empty
+        alert('Make sure all fields are filled up before you click on Submit.')
+      }        
+    },
+    reset() {
+      this.sourceSelect = this.tmpSourceSelect
+      this.title = this.tmpTitle
+      this.content = this.tmpContent
     }
   }
 };

@@ -11,7 +11,7 @@
                   <v-card-text>
                   <h1 class="title">Search for a report using keywords or DOCID</h1>
                   <h2 class="subheading mb-5">Enter one or more of the following</h2>
-                  <v-text-field label="Keywords" v-model="searchTerms" hint="E.g. economics or politics" persistent-hint></v-text-field>
+                  <v-text-field label="Keywords" v-model="searchTerms" hint="E.g. economics or politics" persistent-hint v-on:keyup.enter="performSearch(searchTerms)"></v-text-field>
                   <v-progress-linear
                   v-bind:indeterminate= true
                   v-bind:active = loadactiveState
@@ -27,15 +27,10 @@
                       </v-flex>
                   </v-layout>
                   <p></p>
-                  <!-- <div>
-                  <router-link :to="{ name: 'edit', params: { docid: 1234 }}">Navigate to Page2</router-link>
-                  <router-view></router-view>
-                  </div> -->
                   <div id="datatable" v-show="displayTable">
                     <template>
                     <v-data-table
                         v-bind:headers="headers"
-                        v-bind:pagination.sync="pagination"
                         :items="items"
                         hide-actions
                         class="elevation-1"
@@ -57,7 +52,7 @@
                               :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '', 'text-xs-left']"
                               @click="changeSort(header.value)"
                             >
-                              <v-icon>arrow_upward</v-icon>
+                              <!-- <v-icon>arrow_upward</v-icon> -->
                               {{ header.text }}
                             </th>
                           </tr>
@@ -72,12 +67,11 @@
                               >
                             </v-checkbox>
                           </td>
-                          <!-- <td class="text-xs-left">{{ props.item.docid }}</td> -->
                           <td class="text-xs-left"><router-link :to="{name: 'Edit',  params: { docid: props.item.docid }}">{{ props.item.docid }}</router-link></td>
                           <td class="text-xs-left">{{ props.item.title }}</td>
                         </tr>
                         </template>
-                    </v-data-table>
+ </v-data-table>
                     <div class="text-xs-center pt-2">
                         <v-pagination v-model="pagination.page" :length="pages" :total-visible="11"></v-pagination>
                     </div>
@@ -99,20 +93,22 @@
 <script>
 /* eslint-disable */
 import axios from 'axios'
-var results
 
 export default {
   name: 'SearchView',
   data () {
     return {
+      sortBy: 'docid',
+      orderByDocid: 1,
+      orderByTitle: 1,
       displayTable: false,
       isSearchWithNoResults: false,
       searchTerms: '',
       pagination: {
         sortBy: 'docid',
         rowsPerPage: 10,
-        page: 1,
-        descending: true},
+        descending: true,
+        page: 1},
       headers: [
         {text: 'Docid',
           align: 'left',
@@ -124,27 +120,87 @@ export default {
       ],
       items: [],
       selected: [],
-      loadactiveState: false
+      loadactiveState: false,
+      searchCount: ''
     }
   },
   methods: {
     performSearch: function (value) {
-      const vm = this
+      var vm = this
+      vm.loadactiveState = true
+      vm.displayTable = false
+      vm.isSearchWithNoResults = false
+      vm.items= []
+      vm.pagination.page=1
+      function getSearchResults() {
+        return axios.post('http://35.227.62.44:8080/searchNextReport?searchTerm=' + value + '&page=' + vm.pagination.page);
+      }
+
+      function getSearchCount() {
+        return axios.post('http://35.227.62.44:8080/searchReportCount?searchTerm=' + value);
+      }
+      axios.all([getSearchResults(), getSearchCount()]).then(axios.spread(function(response, searchCount){
+          vm.loadactiveState = false
+          var results = response.data
+          var totalCount = searchCount.data
+          console.log('Success! ' + totalCount + ' results found')
+          // console.log(totalCount + ' results found')
+          if (results.length > 0) {
+             for (var i = 0; i < results.length; i++) {
+               vm.items.push({selected: false, docid: results[i].docid, title: results[i].title})
+             }
+             vm.displayTable = true
+             vm.isSearchWithNoResults = false
+             vm.searchCount = totalCount;
+           } else {
+             vm.items = []
+             vm.displayTable = false
+             vm.isSearchWithNoResults = true
+           }}))
+           .catch(function (error) {
+            console.log(error)
+      })
+      // axios({
+      //   method: 'post',
+      //   // url: 'http://192.168.2.227:8080/searchNextReport?searchTerm=' + value + '&page=' + this.pagination.page
+      //   url: 'http://35.227.62.44:8080/searchNextReport?searchTerm=' + value + '&page=' + this.pagination.page
+      // }).then(function (response) {
+      //   vm.loadactiveState = false
+      //   var results = response.data
+      //   if (results.length > 0) {
+      //     for (var i = 0; i < results.length; i++) {
+      //       console.log(results[i].docid)
+      //       vm.items.push({selected: false, docid: results[i].docid, title: results[i].title})
+      //     }
+      //     vm.displayTable = true
+      //     vm.isSearchWithNoResults = false
+      //   } else {
+      //     vm.items = []
+      //     vm.displayTable = false
+      //     vm.isSearchWithNoResults = true
+      //   }
+      // }).catch(function (error) {
+      //   console.log(error)
+      // })
+    },
+    performSearchWithPagination: function (value, number) {
+      var vm = this
+      var orderBy
       vm.loadactiveState = true
       vm.items= []
       axios({
         method: 'post',
-        url: 'http://35.227.62.44:8080/searchReport?searchTerm=' + value
-        // url: 'http://192.168.2.224:8080/searchReport?searchTerm=' + value
+        // url: 'http://35.227.62.44:8080/searchReport?searchTerm=' + value
+        // url: 'http://192.168.2.227:8080/searchNextReport?searchTerm=' + value + '&page=' + number
+        url: 'http://35.227.62.44:8080/searchNextReport?searchTerm=' + value + '&page=' + number
       }).then(function (response) {
         vm.loadactiveState = false
-        results = response.data
-        console.log(results)
+        var results = response.data
         if (results.length > 0) {
           for (var i = 0; i < results.length; i++) {
             vm.items.push({selected: false, docid: results[i].docid, title: results[i].title})
           }
-          vm.displayTable = true
+          vm.displayTable= true
           vm.isSearchWithNoResults = false
         } else {
           vm.items = []
@@ -161,8 +217,9 @@ export default {
       this.displayTable = false
       this.pagination.sortBy = 'docid'
       this.pagination.descending = true
+      this.pagination.page = 1
       this.isSearchWithNoResults = false
-      loadactiveState: false
+      this.loadactiveState= false
     },
     toggleAll () {
       if (this.selected.length === this.items.length) {
@@ -182,7 +239,14 @@ export default {
   },
   computed: {
     pages () {
-      return this.pagination.rowsPerPage ? Math.ceil(this.items.length / this.pagination.rowsPerPage) : 0
+      // return 50
+      return this.pagination.rowsPerPage ? Math.ceil(this.searchCount / this.pagination.rowsPerPage) : 0
+    }
+  },
+  watch: {
+    'pagination.page': function (pageNumber) {
+      var vm = this
+      vm.performSearchWithPagination(this.searchTerms, pageNumber)
     }
   }
 }
